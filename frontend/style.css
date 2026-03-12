@@ -27,9 +27,11 @@ body {
     height: 420px;
     display: grid;
     grid-template-columns: repeat(4, 1fr); 
+    grid-template-rows: repeat(4, 1fr); 
+
     /*grid-template-rows: repeat(4, minmax(60px, 100px)); */
-    /*gap: 10px;*/
-    grid-gap: 10px;
+    gap: 10px;
+    /*grid-gap: 10px;*/
     background: #bbada0;
     padding: 10px;
     /*background-color: #bbada0;*/
@@ -37,7 +39,7 @@ body {
 
 }
 .box {
-    /*width: 100px;*/
+    width: 100%;
     /*height: 100px;*/
     border-radius: 5px;
     display: flex;
@@ -49,8 +51,11 @@ body {
     font-weight: bold;
     font-size: 40px;
     /*text-align: center;*/
-    transition: all 0.2s ease;
+    transition: all 0.1s ease;
+    aspect-ratio: 1/1;
     color: #776e65;
+    box-sizing: border-box;
+    overflow:hidden;
 }
 
 .controls {
@@ -121,4 +126,8 @@ li {
 
 .modal-content button{
     font-size: 16px;
+}
+
+#gameOverModal{
+    display:none;
 }

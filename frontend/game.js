@@ -363,12 +363,47 @@ function updateGameState(boardChanged){
     }
         updateBoard();
     if(gameOver()){
-        alert("game Over");
-        if(currentUser) {
-            submitScore(currentUser, score);
-        }
+        showGameOver();
     }
     
+}
+
+function showGameOver(){
+    document.getElementById("finalScore").textContent = "Final Score: " + score;
+
+    document.getElementById("gameOverModal").style.display = "flex";
+
+    if(!isGuest){
+        submitScore(currentUser, score);
+    }
+}
+
+function resetGame(){
+
+    board = [
+    [0,0,0,0],
+    [0,0,0,0],
+    [0,0,0,0],
+    [0,0,0,0]
+    ];
+
+    score = 0;
+
+    initGame();
+}
+
+function playAgain(){
+    document.getElementById("gameOverModal").style.display = "none";
+
+    resetGame();
+
+    document.getElementById("loginModal").style.display = "flex";
+}
+
+function returnToMenu(){
+    document.getElementById("gameOverModal").style.display = "none";
+
+    document.getElementById("loginModal").style.display="flex";
 }
 
 function loginFromForm(){
