@@ -4,6 +4,10 @@ let board = [
     [0,0,0,0],
     [0,0,0,0]
 ];
+let currentUser = null;
+let score = 0;
+let isGuest = true;
+
 
 const colors = {
     0: "#cdc1b4",
@@ -19,6 +23,115 @@ const colors = {
     1024: "#edc53f",
     2048: "#edc22e"
 };
+
+async function login(username, password) {
+    const response = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username,
+            password
+        })
+    });
+    const data = await response.json();
+    if(response.ok){
+        currentUser = username;
+        isGuest = false;
+        document.getElementById("loginModal").style.display = "none";
+        alert("Logged in as " + username);
+    } else {
+        alert(data.message);
+    }
+}
+
+async function register(username, password) {
+    const response = await fetch("http://localhost:3000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password})
+    });
+    const data = await response.json();
+    if(response.ok){
+        currentUser = username;
+        isGuest = false;
+        document.getElementById("loginModal").style.display = "none";
+        alert("Account created! Logged in as " + username);
+    } else {
+        alert(data.message);
+    }
+}
+
+async function submitScore(username, score) {
+    if(isGuest) return;
+    const response = await fetch("http://localhost:3000/score", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username,
+            score: score
+        })
+    });
+    const data = await response.json();
+    console.log(data);
+}
+
+
+async function loadLeaderboard() {
+    const response = await fetch("http://localhost:3000/leaderboard");
+    const leaderboard = await response.json();
+
+    const list = document.getElementById("leaderboard");
+
+    list.innerHTML = "";
+
+    leaderboard.forEach(player => {
+        const li = document.createElement("li");
+        li.textContent = player.username + " : " + player.score;
+        list.appendChild(li);
+    });
+}
+
+async function saveGame(username, board, score) {
+    if(isGuest) {
+        alert("Create an account to save games!");
+        return;
+    }
+    const response = await fetch("http://localhost:3000/saveGame", {
+        method: "POST",
+        headers:{
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username,
+            board: JSON.stringify(board),
+            score
+        })
+    });
+    const data = await response.json();
+    console.log(data);
+
+}
+
+async function loadGame(username) {
+    if(isGuest){
+        alert("Guest cannot load a saved game!");
+        return;
+    }
+    const response = await fetch(`http://localhost:3000/load/${username}`);
+    const data = await response.json();
+    if (data){
+        board = JSON.parse(data.board);
+        score = data.score;
+        updateBoard();
+    }
+}
+
+
+
 
 function emptySpaceExists(){
     for(let r = 0; r < 4; r++) {
@@ -106,9 +219,11 @@ function moveUp(){
                     boardChanged = true;
                 }
                 if(currentRow>0 && board[currentRow-1][c]==board[currentRow][c]){
-                    board[currentRow-1][c] = board[currentRow-1][c]+board[currentRow][c];
+                    let newValue = board[currentRow-1][c]+board[currentRow][c];
+                    board[currentRow-1][c] = newValue;
                     board[currentRow][c] = 0;
                     boardChanged = true;
+                    score+=newValue;
                 }
             }
 
@@ -134,9 +249,11 @@ function moveDown(){
                 }
 
                 if (currentRow < 3 && board[currentRow+1][c]==board[currentRow][c]){
-                    board[currentRow+1][c] = board[currentRow+1][c] + board[currentRow][c];
+                    let newValue = board[currentRow+1][c] + board[currentRow][c];
+                    board[currentRow+1][c] = newValue;
                     board[currentRow][c] = 0;
                     boardChanged = true;
+                    score+=newValue
                 }
             }
         }
@@ -160,9 +277,11 @@ function moveLeft(){
                 }
 
                 if (currentCol>0 && board[r][currentCol-1]==board[r][currentCol]){
-                    board[r][currentCol-1] = board[r][currentCol] + board[r][currentCol-1];
+                    let newValue = board[r][currentCol] + board[r][currentCol-1];
+                    board[r][currentCol-1] = newValue;
                     board[r][currentCol] = 0;
                     boardChanged = true;
+                    score += newValue;
                 }
             }
         }
@@ -186,9 +305,11 @@ function moveRight(){
                 }
 
                 if (currentCol<3 && board[r][currentCol+1]==board[r][currentCol]){
-                    board[r][currentCol+1] = board[r][currentCol] + board[r][currentCol+1];
+                    let newValue = board[r][currentCol] + board[r][currentCol+1];
+                    board[r][currentCol+1] = newValue;
                     board[r][currentCol] = 0;
                     boardChanged = true;
+                    score += newValue;
                 }
             }
         }
@@ -243,8 +364,47 @@ function updateGameState(boardChanged){
         updateBoard();
     if(gameOver()){
         alert("game Over");
+        if(currentUser) {
+            submitScore(currentUser, score);
+        }
     }
     
+}
+
+function loginFromForm(){
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    login(username, password);
+}
+
+function registerFromForm(){
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    register(username, password);
+}
+
+function continueAsGuest(){
+    currentUser = "guest";
+    isGuest = true;
+    document.getElementById("loginModal").style.display="none";
+}
+
+function saveCurrentGame(){
+    if(isGuest){
+        alert("Create an account to save games!");
+        return;
+    }
+    saveGame(currentUser, board, score);
+}
+
+function toggleLeaderboard(){
+    document.getElementById("leaderboardPanel").style.display = "block";
+    loadLeaderboard();
+}
+
+function hideLeaderboard(){
+    document.getElementById("leaderboardPanel").style.display = "none";
 }
 
 document.addEventListener('keydown', (event) => {
