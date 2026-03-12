@@ -7,6 +7,7 @@ let board = [
 let currentUser = null;
 let score = 0;
 let isGuest = true;
+let gameEnded = false;
 
 
 const colors = {
@@ -25,7 +26,7 @@ const colors = {
 };
 
 async function login(username, password) {
-    const response = await fetch("http://localhost:3000/login", {
+    const response = await fetch("https://cecilia-2048-api.onrender.com/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -47,7 +48,7 @@ async function login(username, password) {
 }
 
 async function register(username, password) {
-    const response = await fetch("http://localhost:3000/register", {
+    const response = await fetch("https://cecilia-2048-api.onrender.com/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password})
@@ -65,7 +66,7 @@ async function register(username, password) {
 
 async function submitScore(username, score) {
     if(isGuest) return;
-    const response = await fetch("http://localhost:3000/score", {
+    const response = await fetch("https://cecilia-2048-api.onrender.com/score", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -81,7 +82,7 @@ async function submitScore(username, score) {
 
 
 async function loadLeaderboard() {
-    const response = await fetch("http://localhost:3000/leaderboard");
+    const response = await fetch("https://cecilia-2048-api.onrender.com/leaderboard");
     const leaderboard = await response.json();
 
     const list = document.getElementById("leaderboard");
@@ -100,7 +101,7 @@ async function saveGame(username, board, score) {
         alert("Create an account to save games!");
         return;
     }
-    const response = await fetch("http://localhost:3000/saveGame", {
+    const response = await fetch("https://cecilia-2048-api.onrender.com/saveGame", {
         method: "POST",
         headers:{
             "Content-Type": "application/json"
@@ -121,7 +122,7 @@ async function loadGame(username) {
         alert("Guest cannot load a saved game!");
         return;
     }
-    const response = await fetch(`http://localhost:3000/load/${username}`);
+    const response = await fetch(`https://cecilia-2048-api.onrender.com/load/${username}`);
     const data = await response.json();
     if (data){
         board = JSON.parse(data.board);
@@ -362,6 +363,7 @@ function updateGameState(boardChanged){
         addRandomTile();
     }
         updateBoard();
+        updateScore();
     if(gameOver()){
         showGameOver();
     }
@@ -369,6 +371,9 @@ function updateGameState(boardChanged){
 }
 
 function showGameOver(){
+    
+    if(gameEnded) return;
+    gameEnded = true;
     document.getElementById("finalScore").textContent = "Final Score: " + score;
 
     document.getElementById("gameOverModal").style.display = "flex";
@@ -376,9 +381,12 @@ function showGameOver(){
     if(!isGuest){
         submitScore(currentUser, score);
     }
+    
 }
 
 function resetGame(){
+
+    gameEnded = false;
 
     board = [
     [0,0,0,0],
@@ -404,6 +412,10 @@ function returnToMenu(){
     document.getElementById("gameOverModal").style.display = "none";
 
     document.getElementById("loginModal").style.display="flex";
+}
+
+function updateScore(){
+    document.getElementById("score").textContent = score;
 }
 
 function loginFromForm(){
