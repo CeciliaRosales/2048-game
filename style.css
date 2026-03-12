@@ -131,3 +131,21 @@ li {
 #gameOverModal{
     display:none;
 }
+
+#restartBtn {
+    display: block;
+    margin: 10px auto;
+    padding: 8px 20px;
+    background-color: #8f7a66;
+    color: #f9f6f2;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#restartBtn:hover {
+    background-color:#9e8b7a;
+}

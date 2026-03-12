@@ -454,6 +454,11 @@ function hideLeaderboard(){
     document.getElementById("leaderboardPanel").style.display = "none";
 }
 
+document.getElementById("restartBtn").addEventListener("click", () => {
+    document.getElementById("gameOverModal").style.display = "none";
+    resetGame();
+});
+
 document.addEventListener('keydown', (event) => {
     if(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
         event.preventDefault();
@@ -478,6 +483,7 @@ document.addEventListener('keydown', (event) => {
         default:
             return;
     }
-})
+});
+
 
 initGame();
