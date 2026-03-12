@@ -1,2 +1,0 @@
-# 2048-game
-2048 game built from scratch
